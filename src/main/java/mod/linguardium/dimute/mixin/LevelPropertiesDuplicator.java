@@ -15,15 +15,14 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public class LevelPropertiesDuplicator implements copyableProperties {
 
 
-    @Shadow private LevelInfo levelInfo;
+    @Shadow(aliases={"field_25030"}) private LevelInfo levelInfo;
 
-    @Shadow @Final private GeneratorOptions generatorOptions;
+    @Shadow(aliases={"field_25425"}) @Final private GeneratorOptions generatorOptions;
 
-    @Shadow(aliases={"field_25426"},remap=false) @Final private Lifecycle lifecycle;
+    @Shadow(aliases={"field_25426"}) @Final private Lifecycle lifecycle;
 
     @Override
     public LevelProperties copy() {
         return new LevelProperties(levelInfo,generatorOptions,lifecycle);
-
     }
 }
