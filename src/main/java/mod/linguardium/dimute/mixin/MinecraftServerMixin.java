@@ -31,6 +31,7 @@ import java.util.concurrent.Executor;
 public class MinecraftServerMixin {
     @ModifyArgs(at=@At(value="INVOKE",target="Lnet/minecraft/server/world/ServerWorld;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lnet/minecraft/world/level/ServerWorldProperties;Lnet/minecraft/util/registry/RegistryKey;Lnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/server/WorldGenerationProgressListener;Lnet/minecraft/world/gen/chunk/ChunkGenerator;ZJLjava/util/List;Z)V",ordinal = 1),method="createWorlds")
     private void setAndCopyMutableProperties(Args args) {
+
         ServerWorldProperties immutable = args.get(3);
 
         ServerWorldProperties p=null;
@@ -46,6 +47,8 @@ public class MinecraftServerMixin {
         }
 
         RegistryKey<World> worldResourceKey = args.get(4);
-        args.set(12,!(Boolean)args.get(9) && !worldResourceKey.getValue().getNamespace().equals("minecraft")); // set timeticks on if debug is off and it isnt a vanilla dimension
+        boolean DebugMode = args.get(8);
+        if (!DebugMode && !worldResourceKey.getValue().getNamespace().equals("minecraft"))
+            args.set(11,true); // set timeticks on if debug is off and it isnt a vanilla dimension
     }
 }
