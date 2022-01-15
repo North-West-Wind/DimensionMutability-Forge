@@ -22,7 +22,7 @@ public abstract class ServerWorldMixin  extends World implements ServerWorldAcce
         super(properties, registryKey, dimensionType, supplier, bl, bl2, l);
     }
 
-    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"),method="tick")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"),method="tickWeather")
     private void sendToThisDimension(PlayerManager playerManager, Packet<?> packet) {
         playerManager.sendToDimension(packet, getRegistryKey());
     }
