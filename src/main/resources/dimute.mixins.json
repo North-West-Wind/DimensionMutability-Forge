@@ -2,6 +2,7 @@
   "required": true,
   "package": "mod.linguardium.dimute.mixin",
   "compatibilityLevel": "JAVA_16",
+  "refmap": "dimute.refmap.json",
   "mixins": [
     "LevelPropertiesDuplicator",
     "MinecraftServerMixin",

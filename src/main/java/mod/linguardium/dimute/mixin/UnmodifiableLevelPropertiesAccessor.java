@@ -1,12 +1,12 @@
 package mod.linguardium.dimute.mixin;
 
-import net.minecraft.world.level.ServerWorldProperties;
-import net.minecraft.world.level.UnmodifiableLevelProperties;
+import net.minecraft.world.level.storage.DerivedLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(UnmodifiableLevelProperties.class)
+@Mixin(DerivedLevelData.class)
 public interface UnmodifiableLevelPropertiesAccessor {
     @Accessor
-    ServerWorldProperties getWorldProperties();
+    ServerLevelData getWrapped();
 }

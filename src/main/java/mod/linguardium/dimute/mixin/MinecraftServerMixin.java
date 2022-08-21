@@ -1,39 +1,77 @@
 package mod.linguardium.dimute.mixin;
 
 import mod.linguardium.dimute.api.copyableProperties;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.ServerWorldProperties;
-import net.minecraft.world.level.UnmodifiableLevelProperties;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.DerivedLevelData;
+import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-    @ModifyArgs(at=@At(value="INVOKE",target="Lnet/minecraft/server/world/ServerWorld;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lnet/minecraft/world/level/ServerWorldProperties;Lnet/minecraft/util/registry/RegistryKey;Lnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/server/WorldGenerationProgressListener;Lnet/minecraft/world/gen/chunk/ChunkGenerator;ZJLjava/util/List;Z)V",ordinal = 1),method="createWorlds")
-    private void setAndCopyMutableProperties(Args args) {
+    @Unique
+    private boolean debug;
 
-        ServerWorldProperties immutable = args.get(3);
+    @Unique
+    private ResourceKey<Level> dimension;
 
-        ServerWorldProperties p=null;
-        if (immutable instanceof UnmodifiableLevelProperties) {
-            ServerWorldProperties baseProperties = ((UnmodifiableLevelPropertiesAccessor)immutable).getWorldProperties();
-                if (baseProperties instanceof LevelProperties) {
-                    args.set(3,((copyableProperties)baseProperties).copy());
+    /*@Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;Lnet/minecraft/server/level/progress/ChunkProgressListener;Lnet/minecraft/world/level/chunk/ChunkGenerator;ZJLjava/util/List;Z)Lnet/minecraft/server/level/ServerLevel;",ordinal = 1),method="createLevels")
+    private ServerLevel setAndCopyMutableProperties(ServerLevel instance, MinecraftServer server, Executor executor, LevelStorageSource.LevelStorageAccess storage, ServerLevelData data, ResourceKey<Level> resourceKey, Holder holder, ChunkProgressListener listener, ChunkGenerator generator, boolean debug, long p_203771_, List<CustomSpawner> list, boolean timeticks) {
+
+        ServerLevelData newData = null;
+        if (data instanceof DerivedLevelData) {
+            ServerLevelData baseProperties = ((UnmodifiableLevelPropertiesAccessor) data).getWrapped();
+                if (baseProperties instanceof PrimaryLevelData) {
+                    newData = ((copyableProperties)baseProperties).copy();
                 }else {
-                    args.set(3,baseProperties);
+                    newData = baseProperties;
                 }
         }else{
-            args.set(3,immutable);
+            newData = data;
         }
 
-        RegistryKey<World> worldResourceKey = args.get(4);
-        boolean DebugMode = args.get(8);
-        if (!DebugMode && !worldResourceKey.getValue().getNamespace().equals("minecraft"))
-            args.set(11,true); // set timeticks on if debug is off and it isnt a vanilla dimension
+        if (!debug && !resourceKey.location().getNamespace().equals("minecraft"))
+            timeticks = true; // set timeticks on if debug is off and it isnt a vanilla dimension
+        return new ServerLevel(server, executor, storage, newData, resourceKey, holder, listener, generator, debug, p_203771_, list, timeticks);
+    }*/
+
+    @ModifyArg(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;Lnet/minecraft/server/level/progress/ChunkProgressListener;Lnet/minecraft/world/level/chunk/ChunkGenerator;ZJLjava/util/List;Z)V", ordinal = 1), index = 3)
+    private ServerLevelData setAndCopyMutableLevelData(ServerLevelData data) {
+        ServerLevelData newData = null;
+        if (data instanceof DerivedLevelData) {
+            ServerLevelData baseProperties = ((UnmodifiableLevelPropertiesAccessor) data).getWrapped();
+            if (baseProperties instanceof PrimaryLevelData) {
+                newData = ((copyableProperties)baseProperties).copy();
+            } else {
+                newData = baseProperties;
+            }
+        } else {
+            newData = data;
+        }
+        return newData;
+    }
+
+    @ModifyArg(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;Lnet/minecraft/server/level/progress/ChunkProgressListener;Lnet/minecraft/world/level/chunk/ChunkGenerator;ZJLjava/util/List;Z)V", ordinal = 1), index = 4)
+    private ResourceKey<Level> getDimension(ResourceKey<Level> dimension) {
+        this.dimension = dimension;
+        return dimension;
+    }
+
+    @ModifyArg(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;Lnet/minecraft/server/level/progress/ChunkProgressListener;Lnet/minecraft/world/level/chunk/ChunkGenerator;ZJLjava/util/List;Z)V", ordinal = 1), index = 8)
+    private boolean getDebug(boolean debug) {
+        this.debug = debug;
+        return debug;
+    }
+
+    @ModifyArg(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/Holder;Lnet/minecraft/server/level/progress/ChunkProgressListener;Lnet/minecraft/world/level/chunk/ChunkGenerator;ZJLjava/util/List;Z)V", ordinal = 1), index = 11)
+    private boolean setTimeTicks(boolean timeTicks) {
+        if (!debug && !dimension.location().getNamespace().equals("minecraft"))
+            return true;
+        return timeTicks;
     }
 }

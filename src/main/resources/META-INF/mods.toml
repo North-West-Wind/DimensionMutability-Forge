@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[40,)"
+license="MIT"
+
+[[mods]]
+modId="dimute"
+version="${version}"
+displayName="Dimension Mutability"
+logoFile="assets/dimute/icon.png"
+authors="Linguardium, NorthWestWind"
+description='''
+allow server properties to be mutable (fixes stuff)
+'''
+
+[[dependencies.dimute]]
+modId="forge"
+mandatory=true
+versionRange="[40,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.dimute]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.18.2,1.19)"
+ordering="NONE"
+side="BOTH"

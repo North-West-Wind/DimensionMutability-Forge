@@ -1,7 +1,7 @@
 package mod.linguardium.dimute.api;
 
-import net.minecraft.world.level.LevelProperties;
+import net.minecraft.world.level.storage.PrimaryLevelData;
 
 public interface copyableProperties {
-    LevelProperties copy();
+    PrimaryLevelData copy();
 }
